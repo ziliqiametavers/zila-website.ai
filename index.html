@@ -1,40 +1,49 @@
-import { useState } from "react"; import { motion } from "framer-motion"; import { ShoppingCart, Wallet } from "lucide-react";
+import { useState, Suspense } from "react"; import { Canvas } from "@react-three/fiber"; import { OrbitControls, Float, Text3D } from "@react-three/drei"; import { motion } from "framer-motion"; import { ShoppingCart } from "lucide-react"; import { ethers } from "ethers";
 
-const productsData = [ { id: 1, name: "ZILA NFT Alpha", price: "0.2 ETH", category: "NFT", image: "https://via.placeholder.com/300" }, { id: 2, name: "ZILA Hoodie", price: "50 USDT", category: "Hoodie", image: "https://via.placeholder.com/300" }, { id: 3, name: "ZILA T-Shirt", price: "25 USDT", category: "T-Shirt", image: "https://via.placeholder.com/300" } ];
+// 🔥 WALLET CONNECT FUNCTION async function connectWallet(setWallet) { if (window.ethereum) { const provider = new ethers.BrowserProvider(window.ethereum); const accounts = await provider.send("eth_requestAccounts", []); setWallet(accounts[0]); } else { alert("Install MetaMask!"); } }
 
-export default function ZilaShop() { const [cart, setCart] = useState([]);
+// 🔥 3D LOGO ZILA function ZilaLogo3D() { return ( <Float speed={2} rotationIntensity={1.5} floatIntensity={2}> <Text3D
+font="https://threejs.org/examples/fonts/helvetiker_bold.typeface.json"
+size={0.8}
+height={0.3}
+curveSegments={32}
+> ZILA <meshStandardMaterial color="#2563eb" metalness={0.8} roughness={0.2} /> </Text3D> </Float> ); }
 
-const addToCart = (product) => { setCart([...cart, product]); };
+const productsData = [ { id: 1, name: "ZILA NFT Alpha", price: "0.2 ETH", image: "https://via.placeholder.com/300" }, { id: 2, name: "ZILA Hoodie", price: "50 USDT", image: "https://via.placeholder.com/300" }, { id: 3, name: "ZILA T-Shirt", price: "25 USDT", image: "https://via.placeholder.com/300" } ];
 
-return ( <div className="bg-white min-h-screen text-gray-900"> {/* Navbar */} <div className="flex justify-between items-center p-4 shadow-md"> <h1 className="text-2xl font-bold text-blue-600">ZILA SHOP</h1> <div className="flex gap-6 items-center"> <span>Home</span> <span>Marketplace</span> <span>NFT</span> <span>Merch</span> <span className="flex items-center gap-2 cursor-pointer"> <ShoppingCart /> ({cart.length}) </span> <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-xl"> <Wallet size={16}/> Connect </button> </div> </div>
+export default function ZilaShop3D() { const [cart, setCart] = useState([]); const [wallet, setWallet] = useState(null);
 
-{/* Hero */}
-  <div className="text-center py-20">
-    <motion.div
-      animate={{ rotate: 360 }}
-      transition={{ repeat: Infinity, duration: 10 }}
-      className="mx-auto w-32 h-32 bg-blue-500 rounded-full mb-6"
-    />
-    <h2 className="text-4xl font-bold">Next Generation Web3 Shopping</h2>
-    <div className="mt-6 flex justify-center gap-4">
-      <button className="bg-blue-600 text-white px-6 py-2 rounded-xl">Explore</button>
-      <button className="border px-6 py-2 rounded-xl">Connect Wallet</button>
-    </div>
+return ( <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 text-gray-900"> {/* NAVBAR */} <div className="flex justify-between items-center p-4 backdrop-blur-xl bg-white/60 shadow-lg sticky top-0 z-50"> <h1 className="text-2xl font-bold text-blue-600">ZILA SHOP</h1> <div className="flex gap-6 items-center"> <span>Home</span> <span>Marketplace</span> <span>NFT</span> <span>Merch</span> <span className="flex items-center gap-2"> <ShoppingCart /> ({cart.length}) </span> <button onClick={() => connectWallet(setWallet)} className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-xl" > {wallet ? wallet.slice(0,6)+"..." : "Connect Wallet"} </button> </div> </div>
+
+{/* HERO 3D LOGO */}
+  <div className="h-[500px]">
+    <Canvas camera={{ position: [0, 0, 5] }}>
+      <ambientLight intensity={1} />
+      <directionalLight position={[5, 5, 5]} />
+      <Suspense fallback={null}>
+        <ZilaLogo3D />
+      </Suspense>
+      <OrbitControls autoRotate enableZoom={false} />
+    </Canvas>
   </div>
 
-  {/* Products */}
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8">
+  <div className="text-center -mt-16">
+    <h2 className="text-4xl font-bold text-blue-700">Next Generation Web3 Shopping</h2>
+  </div>
+
+  {/* PRODUCTS */}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-10">
     {productsData.map((item) => (
       <motion.div
-        whileHover={{ scale: 1.05 }}
         key={item.id}
-        className="bg-white shadow-xl rounded-2xl p-4"
+        whileHover={{ scale: 1.1, rotateY: 10 }}
+        className="bg-white/60 backdrop-blur-xl border shadow-xl rounded-2xl p-4"
       >
         <img src={item.image} className="rounded-xl mb-4" />
         <h3 className="text-xl font-semibold">{item.name}</h3>
-        <p className="text-blue-500">{item.price}</p>
+        <p className="text-blue-600">{item.price}</p>
         <button
-          onClick={() => addToCart(item)}
+          onClick={() => setCart([...cart, item])}
           className="mt-4 w-full bg-blue-600 text-white py-2 rounded-xl"
         >
           Add to Cart
@@ -43,25 +52,24 @@ return ( <div className="bg-white min-h-screen text-gray-900"> {/* Navbar */} <d
     ))}
   </div>
 
-  {/* Cart */}
-  <div className="p-8">
+  {/* CART */}
+  <div className="p-10">
     <h2 className="text-2xl font-bold mb-4">Cart</h2>
-    {cart.map((item, i) => (
-      <div key={i} className="flex justify-between border-b py-2">
-        <span>{item.name}</span>
-        <span>{item.price}</span>
-      </div>
-    ))}
+    <div className="bg-white/60 backdrop-blur-xl p-4 rounded-xl shadow">
+      {cart.length === 0 && <p>Cart kosong</p>}
+      {cart.map((item, i) => (
+        <div key={i} className="flex justify-between border-b py-2">
+          <span>{item.name}</span>
+          <span>{item.price}</span>
+        </div>
+      ))}
+    </div>
   </div>
 
-  {/* Partners */}
-  <div className="p-10 text-center">
-    <h2 className="text-2xl font-bold mb-6">Backed By & Partners</h2>
-    <div className="flex justify-center gap-10">
-      <motion.img whileHover={{ rotate: 360 }} src="https://via.placeholder.com/100" />
-      <motion.img whileHover={{ rotate: 360 }} src="https://via.placeholder.com/100" />
-      <motion.img whileHover={{ rotate: 360 }} src="https://via.placeholder.com/100" />
-    </div>
+  {/* DEPLOY INFO */}
+  <div className="text-center p-10 text-gray-600">
+    <p>🚀 Ready to deploy on Vercel / Netlify</p>
+    <p>Install deps: npm install three @react-three/fiber @react-three/drei ethers framer-motion</p>
   </div>
 </div>
 
